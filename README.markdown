@@ -6,3 +6,7 @@
 
 * Run: 'rake rip:repositories'
 * Run: 'rake rip:commits'
+
+# Profanity statistics
+
+![](./profanity_chart.png)
