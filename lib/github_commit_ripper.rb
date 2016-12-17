@@ -23,14 +23,16 @@ class GitHubCommitRipper
       end
       loop do
         break if page == 11
-        puts "Commit page #{page}"
-        url = %{http://github.com/api/v2/json/commits/list/#{repository[:user_id]}/#{repository[:repository]}/master/?page=#{page}}
+        url = %{https://api.github.com/repos/#{repository[:user_id]}/#{repository[:repository]}/commits?page=#{page}}
+        puts "#{repository[:language]} > #{repository[:user_id]}/#{repository[:repository]} > page #{page} (#{url})"
+        # url = %{http://github.com/api/v2/json/commits/list/#{repository[:user_id]}/#{repository[:repository]}/master/?page=#{page}}
         json = get_json(url)
+        puts json
         break if json == nil
         json = JSON.parse(json)
-        commits << json["commits"].map { |commit| { :language => repository[:language], :message => commit["message"] } }
+        commits << json.map { |commit| { :language => repository[:language], :message => commit["commit"]["message"] } }
         page = page + 1
-      end
+      end 
       commits.flatten!
 
       File.open(path, 'w') do |file|
@@ -48,9 +50,9 @@ class GitHubCommitRipper
       json = nil
       while json == nil
         json = Net::HTTP.get(uri)
-        json = nil if json =~ /"error":\["Rate Limit Exceeded for \d+.\d+.\d+.\d+"\]/
-        return nil if json =~ /"error":"Not Found"/
-        sleep(1) if json == nil
+        json = nil if json =~ /"message":\["Rate Limit Exceeded for \d+.\d+.\d+.\d+"\]/
+        return nil if json =~ /"message":"Not Found"/
+        sleep(6) if json == nil
       end
       json
     end

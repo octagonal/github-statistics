@@ -22,7 +22,8 @@ class GitHubRepositoryRipper
 
     def get_repositories(language, page)
       puts %{#{language} page #{page}}
-      uri = URI.parse %{http://github.com/api/v2/json/repos/search/+?type=Repositories&language=#{language}&start_page=#{page}}
+      uri = URI.parse %{https://api.github.com/search/repositories?q=+language:#{language}&page=#{page}&per_page=100&sort=stars&order=desc}
+      #uri = URI.parse %{http://github.com/api/v2/json/repos/search/+?type=Repositories&language=#{language}&page=#{page}}
       json = nil
       while json == nil
         json = Net::HTTP.get(uri)
@@ -33,8 +34,9 @@ class GitHubRepositoryRipper
       end
       parsed_json = JSON.parse(json)
       data = []
-      parsed_json["repositories"].each do |repository|
-        data << {:language => repository["language"], :user_id => repository["username"], :repository => repository["name"]}
+      parsed_json["items"].each do |repository|
+        puts data
+        data << {:language => repository["language"], :user_id => repository["owner"]["login"], :repository => repository["name"]}
       end
       data
     end
